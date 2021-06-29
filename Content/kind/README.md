@@ -139,3 +139,10 @@ Faço isso, porque prefiro estudar/trabalhar com o CNI [**Weave-net**](https://w
 kubectl apply -f "https://cloud.weave.works/k8s/net?k8s-version=$(kubectl version | base64 | tr -d '\n')"
 ```
 Finalizado o deployment do `weave-net` você terá um cluster pronto para estudo.
+
+```bash
+NAME                        STATUS   ROLES                  AGE   VERSION
+kindcluster-control-plane   Ready    control-plane,master   12h   v1.20.7
+kindcluster-worker          Ready    <none>                 12h   v1.20.7
+kindcluster-worker2         Ready    <none>                 12h   v1.20.7
+```
