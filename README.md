@@ -5,6 +5,14 @@
 
 Neste repositório descrevo passo à passo como executar um cluster Kubernetes localmente para fins de estudo. Nos tópicos abaixo você vai obter informações para criar cluster `Múltiplos Nós`, `Load Balancer`, `Observabilidade` e afins.
 
+**Conteúdo:**
+
+01. [**Instalação e configuração do Kind**](Content/kind/README.md)
+02. [**LoadBalancer com MetalLB**](Content/metallb/README.md)
+03. [**Metrics Server**](Content/metrics-server/README.md)
+04. [**Kubernetes Dashboard**](Content/dashboard/README.md)
+05. [**Nginx Ingress Controller**](Content/nginx-ingress-controller/README.md)
+
 **Requisito:**
 
 01. Docker devidamente instalado e em execução
@@ -38,11 +46,3 @@ Share images, automate workflows, and more with a free Docker ID:
 For more examples and ideas, visit:
  https://docs.docker.com/get-started/
 ```
-
-**Conteúdo:**
-
-01. [**Instalação e configuração do Kind**](Content/kind/README.md)
-02. [**LoadBalancer com MetalLB**](Content/metallb/README.md)
-03. [**Metrics Server**](Content/metrics-server/README.md)
-04. [**Kubernetes Dashboard**](Content/dashboard/README.md)
-05. [**Nginx Ingress Controller**](Content/nginx-ingress-controller/README.md)
