@@ -4,12 +4,12 @@ Com o [**MetalLB**](https://metallb.universe.tf/) consigo utilizar o recurso de 
 
 Criação do namespace chamado ```metallb-system```.
 ```bash
-kubectl apply -f https://raw.githubusercontent.com/metallb/metallb/v0.9.4/manifests/namespace.yaml
+kubectl apply -f https://raw.githubusercontent.com/metallb/metallb/v0.10.2/manifests/namespace.yaml
 ```
 
 Implantação do deployment contendo o ```controller``` e o daemonset contendo os ```speakers```.
 ```bash
-kubectl apply -f https://raw.githubusercontent.com/metallb/metallb/v0.9.4/manifests/metallb.yaml
+kubectl apply -f https://raw.githubusercontent.com/metallb/metallb/v0.10.2/manifests/metallb.yaml
 ```
 
 Agora, a criação de uma ```secret``` contendo a ```secretKey``` que irá criptografar a comunicação entre os speakers.
@@ -25,12 +25,13 @@ docker network inspect bridge | jq .
 ```
 
 O resultado aqui no meu caso é o seguinte:
+
 ```
 [
   {
     "Name": "bridge",
-    "Id": "8702d3b4202ff0b322531ee480dd943aa2b68fc53c5fecb421d9a3fb2eb522da",
-    "Created": "2020-09-13T20:13:00.486441023-03:00",
+    "Id": "a7a3ab5852cad643ec5c78cc5127e2ab901b748446eff5a0ead825e6eb3c447e",
+    "Created": "2021-06-29T10:00:11.337181671-03:00",
     "Scope": "local",
     "Driver": "bridge",
     "EnableIPv6": false,
@@ -66,18 +67,19 @@ O resultado aqui no meu caso é o seguinte:
 ```
 
 Ou seja, a subnet utilizada pelo Docker é ```172.17.0.0/16```. Diante disso, executando o comando ```kubectl get nodes -o wide``` posso ver os IPs atribuídos aos containers do Kind observando a coluna **INTERNAL-IP**.
+
 ```
-NAME                   STATUS   ROLES    AGE    VERSION   INTERNAL-IP   EXTERNAL-IP   OS-IMAGE           KERNEL-VERSION          CONTAINER-RUNTIME
-estudo-control-plane   Ready    master   113m   v1.18.6   172.19.0.4    <none>        Ubuntu 20.04 LTS   5.8.4-200.fc32.x86_64   containerd://1.4.0-beta.2-21-ge818fe27
-estudo-worker          Ready    <none>   113m   v1.18.6   172.19.0.3    <none>        Ubuntu 20.04 LTS   5.8.4-200.fc32.x86_64   containerd://1.4.0-beta.2-21-ge818fe27
-estudo-worker2         Ready    <none>   113m   v1.18.6   172.19.0.2    <none>        Ubuntu 20.04 LTS   5.8.4-200.fc32.x86_64   containerd://1.4.0-beta.2-21-ge818fe27
+NAME                        STATUS   ROLES                  AGE   VERSION   INTERNAL-IP   EXTERNAL-IP   OS-IMAGE       KERNEL-VERSION          CONTAINER-RUNTIME
+kindcluster-control-plane   Ready    control-plane,master   12h   v1.20.7   172.18.0.4    <none>        Ubuntu 21.04   5.3.7-301.fc31.x86_64   containerd://1.5.2
+kindcluster-worker          Ready    <none>                 12h   v1.20.7   172.18.0.3    <none>        Ubuntu 21.04   5.3.7-301.fc31.x86_64   containerd://1.5.2
+kindcluster-worker2         Ready    <none>                 12h   v1.20.7   172.18.0.2    <none>        Ubuntu 21.04   5.3.7-301.fc31.x86_64   containerd://1.5.2
 ```
 
 Consigo inclusive ```pingar``` em cada um dos IPs listados.
 ```
-➜ ping -c 1 172.19.0.4    
-PING 172.19.0.4 (172.19.0.4) 56(84) bytes of data.
-64 bytes from 172.19.0.4: icmp_seq=1 ttl=64 time=0.062 ms
+➜ ping -c 1 172.18.0.4    
+PING 172.18.0.4 (172.18.0.4) 56(84) bytes of data.
+64 bytes from 172.18.0.4: icmp_seq=1 ttl=64 time=0.062 ms
 ```
 
 Sabendo então qual a subnet utiliza pelo Kind, o meu arquivo de ```ConfigMap``` ficará conforme mostrado abaixo, onde reservo 5 IPs.
