@@ -90,7 +90,7 @@ Observe que no YAML informei a versão `1.20.7` do Kubernetes. O kind na versão
 
 Agora utililize o comando abaixo para inicializar o cluster.
 
-**OBSERVAÇÃO: Para versões do fedora 32 ou superiores, você precisa executar o seguinte passo antes:**
+**OBSERVAÇÃO: Para versões do fedora 31 ou superiores, você precisa executar o seguinte passo antes:**
 
 ```bash
 # Adiciona a interface do docker no env trusted para que o docker faça conexões remotas
