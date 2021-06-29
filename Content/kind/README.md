@@ -131,6 +131,12 @@ Com o cluster inicializado, exporte a variável `KUBECONFIG`, pois no comando ac
 export KUBECONFIG="$HOME/.kube/kind.yml"
 ```
 
+Para validar se o import das configs funcionou, basta executar o seguinte comando:
+
+```
+kubectl config view
+```
+
 Executando o comando ```kubectl get nodes``` percebe-se que o status dos nodes será **NotReady**, pois o CNI padrão, o **kindnet**, está desabilitado. Dessa forma os pods não podem se comunicar.
 
 Faço isso, porque prefiro estudar/trabalhar com o CNI [**Weave-net**](https://www.weave.works/docs/net/latest/kubernetes/kube-addon/), que para instalar basta executar o comando abaixo.
