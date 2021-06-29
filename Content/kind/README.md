@@ -146,3 +146,40 @@ kindcluster-control-plane   Ready    control-plane,master   12h   v1.20.7
 kindcluster-worker          Ready    <none>                 12h   v1.20.7
 kindcluster-worker2         Ready    <none>                 12h   v1.20.7
 ```
+
+Por fim, o estado dos componentes do kubernetes você coleta da seguinte forma:
+
+```bash
+kubectl get pods --all-namespaces
+```
+
+O seu retorno deve ser algo assim:
+
+```
+NAMESPACE            NAME                                                READY   STATUS    RESTARTS   AGE
+kube-system          coredns-74ff55c5b-4hf8r                             1/1     Running   0          15m
+kube-system          coredns-74ff55c5b-95kpl                             1/1     Running   0          15m
+kube-system          etcd-kindcluster-control-plane                      1/1     Running   0          16m
+kube-system          kube-apiserver-kindcluster-control-plane            1/1     Running   0          16m
+kube-system          kube-controller-manager-kindcluster-control-plane   1/1     Running   0          16m
+kube-system          kube-proxy-5j22w                                    1/1     Running   0          15m
+kube-system          kube-proxy-h5v5r                                    1/1     Running   0          15m
+kube-system          kube-proxy-q4wmg                                    1/1     Running   0          15m
+kube-system          kube-scheduler-kindcluster-control-plane            1/1     Running   0          16m
+kube-system          weave-net-7wv8k                                     2/2     Running   1          12m
+kube-system          weave-net-gtxnq                                     2/2     Running   1          12m
+kube-system          weave-net-hmp6s                                     2/2     Running   1          12m
+local-path-storage   local-path-provisioner-547f784dff-b7czt             1/1     Running   0          15m
+```
+
+Agora você pode testar o cluster da seguinte forma:
+
+```bash
+kubectl run nginx --image nginx
+```
+
+E destruir o teste da seguinte forma:
+
+```
+kubectl delete pod nginx
+```

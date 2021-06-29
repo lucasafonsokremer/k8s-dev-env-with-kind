@@ -11,56 +11,81 @@ E0919 18:23:43.157897       1 manager.go:111] unable to fully collect metrics: [
 
 Diante disso, baixe o arquivo ```components.yml```.
 ```bash
-wget https://github.com/kubernetes-sigs/metrics-server/releases/download/v0.3.7/components.yaml
+wget https://github.com/kubernetes-sigs/metrics-server/releases/download/v0.5.0/components.yaml
 ```
 
 Procure o trecho do ```Deployment``` do ```metrics-server``` e passe para o container o argumento ```--kubelet-insecure-tls```. Dessa forma não será consultado a CA dos certificados gerados para os serviços do Kubernetes.
 
 O ```Deployment``` ficará da seguinte forma:
+
 ```yaml
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: metrics-server
-  namespace: kube-system
   labels:
     k8s-app: metrics-server
+  name: metrics-server
+  namespace: kube-system
 spec:
   selector:
     matchLabels:
       k8s-app: metrics-server
+  strategy:
+    rollingUpdate:
+      maxUnavailable: 0
   template:
     metadata:
-      name: metrics-server
       labels:
         k8s-app: metrics-server
     spec:
-      serviceAccountName: metrics-server
-      volumes:
-      # mount in tmp so we can safely use from-scratch images and/or read-only containers
-      - name: tmp-dir
-        emptyDir: {}
       containers:
-      - name: metrics-server
-        image: k8s.gcr.io/metrics-server/metrics-server:v0.3.7
+      - args:
+        - --cert-dir=/tmp
+        - --secure-port=443
+        - --kubelet-insecure-tls
+        - --kubelet-preferred-address-types=InternalIP,ExternalIP,Hostname
+        - --kubelet-use-node-status-port
+        - --metric-resolution=15s
+        image: k8s.gcr.io/metrics-server/metrics-server:v0.5.0
         imagePullPolicy: IfNotPresent
-        args:
-          - --cert-dir=/tmp
-          - --secure-port=4443
-          - --kubelet-insecure-tls
+        livenessProbe:
+          failureThreshold: 3
+          httpGet:
+            path: /livez
+            port: https
+            scheme: HTTPS
+          periodSeconds: 10
+        name: metrics-server
         ports:
-        - name: main-port
-          containerPort: 4443
+        - containerPort: 443
+          name: https
           protocol: TCP
+        readinessProbe:
+          failureThreshold: 3
+          httpGet:
+            path: /readyz
+            port: https
+            scheme: HTTPS
+          initialDelaySeconds: 20
+          periodSeconds: 10
+        resources:
+          requests:
+            cpu: 100m
+            memory: 200Mi
         securityContext:
           readOnlyRootFilesystem: true
           runAsNonRoot: true
           runAsUser: 1000
         volumeMounts:
-        - name: tmp-dir
-          mountPath: /tmp
+        - mountPath: /tmp
+          name: tmp-dir
       nodeSelector:
         kubernetes.io/os: linux
+      priorityClassName: system-cluster-critical
+      serviceAccountName: metrics-server
+      volumes:
+      - emptyDir: {}
+        name: tmp-dir
 ```
 
 Feito isso, só criar o recurso.
@@ -72,31 +97,31 @@ Após alguns minutos será possível consultar as métrics de recursos do seu cl
 
 ```
 ➜ kubectl top nodes                                                                       
-NAME                   CPU(cores)   CPU%   MEMORY(bytes)   MEMORY%   
-estudo-control-plane   127m         3%     595Mi           3%        
-estudo-worker          36m          0%     236Mi           1%        
-estudo-worker2         54m          1%     256Mi           1%        
+NAME                        CPU(cores)   CPU%   MEMORY(bytes)   MEMORY%   
+kindcluster-control-plane   131m         3%     860Mi           22%       
+kindcluster-worker          43m          1%     378Mi           9%        
+kindcluster-worker2         38m          0%     338Mi           8%
 ```
 
 ```
 ➜ kubectl top pods --all-namespaces            
-NAMESPACE            NAME                                           CPU(cores)   MEMORY(bytes)   
-kube-system          coredns-66bff467f8-jhnr8                       5m           7Mi             
-kube-system          coredns-66bff467f8-vdqqg                       4m           7Mi             
-kube-system          etcd-estudo-control-plane                      25m          27Mi            
-kube-system          kube-apiserver-estudo-control-plane            48m          245Mi           
-kube-system          kube-controller-manager-estudo-control-plane   17m          35Mi            
-kube-system          kube-proxy-hrmwm                               1m           11Mi            
-kube-system          kube-proxy-m6pkk                               1m           10Mi            
-kube-system          kube-proxy-rz85r                               1m           11Mi            
-kube-system          kube-scheduler-estudo-control-plane            5m           13Mi            
-kube-system          metrics-server-8499f4d68c-qcrhv                1m           11Mi            
-kube-system          weave-net-84d54                                2m           43Mi            
-kube-system          weave-net-8nzw4                                2m           49Mi            
-kube-system          weave-net-lswbz                                3m           39Mi            
-local-path-storage   local-path-provisioner-67795f75bd-zmzhh        7m           7Mi             
-metallb-system       controller-57f648cb96-xsqzg                    1m           5Mi             
-metallb-system       speaker-cgf5l                                  8m           7Mi             
-metallb-system       speaker-k5q4d                                  5m           7Mi             
-metallb-system       speaker-rdp5b                                  7m           7Mi             
+NAMESPACE            NAME                                                CPU(cores)   MEMORY(bytes)   
+kube-system          coredns-74ff55c5b-4hf8r                             3m           10Mi            
+kube-system          coredns-74ff55c5b-95kpl                             4m           10Mi            
+kube-system          etcd-kindcluster-control-plane                      11m          40Mi            
+kube-system          kube-apiserver-kindcluster-control-plane            53m          339Mi           
+kube-system          kube-controller-manager-kindcluster-control-plane   16m          50Mi            
+kube-system          kube-proxy-5j22w                                    1m           14Mi            
+kube-system          kube-proxy-h5v5r                                    1m           16Mi            
+kube-system          kube-proxy-q4wmg                                    1m           20Mi            
+kube-system          kube-scheduler-kindcluster-control-plane            3m           20Mi            
+kube-system          metrics-server-c5f5f4c85-wwm4s                      4m           17Mi            
+kube-system          weave-net-7wv8k                                     3m           43Mi            
+kube-system          weave-net-gtxnq                                     1m           43Mi            
+kube-system          weave-net-hmp6s                                     1m           43Mi            
+local-path-storage   local-path-provisioner-547f784dff-b7czt             1m           7Mi             
+metallb-system       controller-6b78bff7d9-f65xj                         1m           6Mi             
+metallb-system       speaker-d5djc                                       6m           11Mi            
+metallb-system       speaker-rtl25                                       5m           10Mi            
+metallb-system       speaker-v9r7j                                       7m           10Mi
 ```
